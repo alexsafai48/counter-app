@@ -4,80 +4,170 @@
  */
 import { LitElement, html, css } from "lit";
 import { DDDSuper } from "@haxtheweb/d-d-d/d-d-d.js";
-import { I18NMixin } from "@haxtheweb/i18n-manager/lib/I18NMixin.js";
 
 /**
  * `counter-app`
- * 
+ *
  * @demo index.html
  * @element counter-app
  */
-export class CounterApp extends DDDSuper(I18NMixin(LitElement)) {
+export class CounterApp extends DDDSuper(LitElement) {
 
-  static get tag() {
-    return "counter-app";
+  static get properties() {
+    return {
+      counter: { type: Number },
+      min: { type: Number },
+      max: { type: Number },
+    };
   }
 
   constructor() {
     super();
-    this.title = "";
-    this.t = this.t || {};
-    this.t = {
-      ...this.t,
-      title: "Title",
-    };
-    this.registerLocalization({
-      context: this,
-      localesPath:
-        new URL("./locales/counter-app.ar.json", import.meta.url).href +
-        "/../",
-    });
+    this.counter = 0;
+    this.min = 0;
+    this.max = 100;
   }
 
-  // Lit reactive properties
-  static get properties() {
-    return {
-      ...super.properties,
-      title: { type: String },
-    };
-  }
-
-  // Lit scoped styles
   static get styles() {
-    return [super.styles,
-    css`
-      :host {
-        display: block;
-        color: var(--ddd-theme-primary);
-        background-color: var(--ddd-theme-accent);
-        font-family: var(--ddd-font-navigation);
-      }
-      .wrapper {
-        margin: var(--ddd-spacing-2);
-        padding: var(--ddd-spacing-4);
-      }
-      h3 span {
-        font-size: var(--counter-app-label-font-size, var(--ddd-font-size-s));
-      }
-    `];
+    return [
+      super.styles,
+      css`
+        :host {
+          display: inline-block;
+          font-family: var(--ddd-font-navigation);
+        }
+
+        .wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: var(--ddd-spacing-6);
+          gap: var(--ddd-spacing-4);
+        }
+
+        .number {
+          font-size: 72px;
+          font-weight: var(--ddd-font-weight-bold);
+          color: var(--ddd-theme-default-coalyGray);
+          min-width: 80px;
+          text-align: center;
+          transition: color 0.3s ease;
+        }
+
+        .number.at-18 {
+          color: var(--ddd-theme-default-inventionOrange);
+        }
+
+        .number.at-21 {
+          color: var(--ddd-theme-default-wonderPurple);
+        }
+
+        .number.at-min {
+          color: var(--ddd-theme-default-pughBlue);
+        }
+
+        .number.at-max {
+          color: var(--ddd-theme-default-original87Pink);
+        }
+
+        .btn-group {
+          display: flex;
+          gap: var(--ddd-spacing-4);
+        }
+
+        button {
+          width: 48px;
+          height: 48px;
+          font-size: var(--ddd-font-size-l);
+          font-weight: var(--ddd-font-weight-bold);
+          border: 2px solid var(--ddd-theme-default-limestoneLight);
+          border-radius: var(--ddd-radius-md);
+          background-color: var(--ddd-theme-default-white);
+          color: var(--ddd-theme-default-coalyGray);
+          cursor: pointer;
+          transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover:not(:disabled) {
+          background-color: var(--ddd-theme-default-limestoneLight);
+          box-shadow: var(--ddd-boxShadow-sm);
+        }
+
+        button:focus:not(:disabled) {
+          outline: 3px solid var(--ddd-theme-default-pughBlue);
+          outline-offset: 2px;
+        }
+
+        button:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+      `,
+    ];
   }
 
-  // Lit render the HTML
+  get _numberClass() {
+    if (this.counter === this.min) return "number at-min";
+    if (this.counter === this.max) return "number at-max";
+    if (this.counter === 21) return "number at-21";
+    if (this.counter === 18) return "number at-18";
+    return "number";
+  }
+
+  increment() {
+    if (this.counter < this.max) {
+      this.counter++;
+    }
+  }
+
+  decrement() {
+    if (this.counter > this.min) {
+      this.counter--;
+    }
+  }
+
   render() {
     return html`
-<div class="wrapper">
-  <h3><span>${this.t.title}:</span> ${this.title}</h3>
-  <slot></slot>
-</div>`;
+      <confetti-container id="confetti">
+        <div class="wrapper">
+          <div class="${this._numberClass}">${this.counter}</div>
+          <div class="btn-group">
+            <button
+              @click="${this.decrement}"
+              ?disabled="${this.counter === this.min}"
+              aria-label="Decrement"
+            >-</button>
+            <button
+              @click="${this.increment}"
+              ?disabled="${this.counter === this.max}"
+              aria-label="Increment"
+            >+</button>
+          </div>
+        </div>
+      </confetti-container>
+    `;
   }
 
-  /**
-   * haxProperties integration via file reference
-   */
-  static get haxProperties() {
-    return new URL(`./lib/${this.tag}.haxProperties.json`, import.meta.url)
-      .href;
+  updated(changedProperties) {
+    if (super.updated) {
+      super.updated(changedProperties);
+    }
+    if (changedProperties.has("counter")) {
+      if (this.counter === 21) {
+        this.makeItRain();
+      }
+    }
+  }
+
+  makeItRain() {
+    import("@haxtheweb/multiple-choice/lib/confetti-container.js").then(
+      () => {
+        setTimeout(() => {
+          this.shadowRoot.querySelector("#confetti").setAttribute("popped", "");
+        }, 0);
+      }
+    );
   }
 }
 
-globalThis.customElements.define(CounterApp.tag, CounterApp);
+customElements.define("counter-app", CounterApp);
