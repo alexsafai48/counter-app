@@ -13,6 +13,7 @@ import { DDDSuper } from "@haxtheweb/d-d-d/d-d-d.js";
  */
 export class CounterApp extends DDDSuper(LitElement) {
 
+  // Defines reactive properties — Lit re-renders whenever these change
   static get properties() {
     return {
       counter: { type: Number },
@@ -21,6 +22,7 @@ export class CounterApp extends DDDSuper(LitElement) {
     };
   }
 
+  // Sets default values for all properties
   constructor() {
     super();
     this.counter = 0;
@@ -28,6 +30,7 @@ export class CounterApp extends DDDSuper(LitElement) {
     this.max = 100;
   }
 
+  // Returns scoped CSS styles for this component using DDD design tokens
   static get styles() {
     return [
       super.styles,
@@ -106,6 +109,7 @@ export class CounterApp extends DDDSuper(LitElement) {
     ];
   }
 
+  // Returns the CSS class for the number display based on the current counter value
   get _numberClass() {
     if (this.counter === this.min) return "number at-min";
     if (this.counter === this.max) return "number at-max";
@@ -114,18 +118,21 @@ export class CounterApp extends DDDSuper(LitElement) {
     return "number";
   }
 
+  // Increases the counter by 1, up to the max
   increment() {
     if (this.counter < this.max) {
       this.counter++;
     }
   }
 
+  // Decreases the counter by 1, down to the min
   decrement() {
     if (this.counter > this.min) {
       this.counter--;
     }
   }
 
+  // Returns the HTML template for the component
   render() {
     return html`
       <confetti-container id="confetti">
@@ -148,6 +155,7 @@ export class CounterApp extends DDDSuper(LitElement) {
     `;
   }
 
+  // Lit lifecycle — runs after every re-render; triggers confetti when counter hits 21
   updated(changedProperties) {
     if (super.updated) {
       super.updated(changedProperties);
@@ -159,6 +167,7 @@ export class CounterApp extends DDDSuper(LitElement) {
     }
   }
 
+  // Dynamically imports the confetti element and triggers its animation
   makeItRain() {
     import("@haxtheweb/multiple-choice/lib/confetti-container.js").then(
       () => {
